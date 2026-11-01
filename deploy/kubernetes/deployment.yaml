@@ -1,0 +1,49 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: cellforge
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: cellforge-control-plane
+  namespace: cellforge
+spec:
+  replicas: 1
+  selector:
+    matchLabels: {app: cellforge}
+  template:
+    metadata:
+      labels: {app: cellforge}
+    spec:
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 10001
+        seccompProfile: {type: RuntimeDefault}
+      containers:
+        - name: control-plane
+          image: cellforge:local
+          imagePullPolicy: IfNotPresent
+          ports: [{name: http, containerPort: 8080}]
+          readinessProbe:
+            httpGet: {path: /readyz, port: http}
+            periodSeconds: 5
+          livenessProbe:
+            httpGet: {path: /healthz, port: http}
+            periodSeconds: 10
+          resources:
+            requests: {cpu: 100m, memory: 64Mi}
+            limits: {cpu: 500m, memory: 256Mi}
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities: {drop: [ALL]}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: cellforge
+  namespace: cellforge
+spec:
+  selector: {app: cellforge}
+  ports: [{name: http, port: 80, targetPort: http}]

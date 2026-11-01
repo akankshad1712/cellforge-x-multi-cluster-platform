@@ -1,227 +1,184 @@
-# ◈ CELLFORGE X
+# CELLFORGE X
+
+<div align="center">
+
 ### ADVANCED MULTI-CLUSTER KUBERNETES PLATFORM CONTROL PLANE
 
-<p align="center">
-  <strong>ENGINEERING RESILIENT INFRASTRUCTURE THROUGH INTELLIGENT ORCHESTRATION.</strong>
-</p>
+**Infrastructure, orchestrated intelligently.**
 
-<p align="center">
-  <a href="https://github.com/akankshad1712/cellforge-x-multi-cluster-platform">
-    <img src="https://img.shields.io/badge/PROJECT-CELLFORGE%20X-8B5CF6?style=for-the-badge&logo=github&logoColor=white" alt="CELLFORGE X">
-  </a>
-  <img src="https://img.shields.io/badge/LANGUAGE-GO-00ADD8?style=for-the-badge&logo=go&logoColor=white" alt="Go">
-  <img src="https://img.shields.io/badge/DOMAIN-PLATFORM%20ENGINEERING-06B6D4?style=for-the-badge" alt="Platform Engineering">
-  <img src="https://img.shields.io/badge/ARCHITECTURE-CELL--BASED-10B981?style=for-the-badge" alt="Cell Based Architecture">
-</p>
+A Go-based platform engineering prototype exploring cell-based infrastructure, capacity-aware scheduling, workload reconciliation, and failure isolation.
 
-<p align="center">
-  <a href="#-overview">Overview</a> •
-  <a href="#-architecture">Architecture</a> •
-  <a href="#-capabilities">Capabilities</a> •
-  <a href="#-technology-stack">Tech Stack</a> •
-  <a href="#-getting-started">Getting Started</a> •
-  <a href="#-roadmap">Roadmap</a>
-</p>
+<br/>
+
+[![Go](https://img.shields.io/badge/Go-00ADD8?style=flat-square&logo=go&logoColor=white)](https://go.dev/)
+[![Kubernetes](https://img.shields.io/badge/Kubernetes-326CE5?style=flat-square&logo=kubernetes&logoColor=white)](https://kubernetes.io/)
+[![Docker](https://img.shields.io/badge/Docker-2496ED?style=flat-square&logo=docker&logoColor=white)](https://www.docker.com/)
+[![Platform Engineering](https://img.shields.io/badge/Platform-Engineering-8B5CF6?style=flat-square)](#)
+[![License](https://img.shields.io/badge/License-See%20LICENSE-64748B?style=flat-square)](LICENSE)
+
+**[Repository](https://github.com/akankshad1712/cellforge-x-multi-cluster-platform) · [Architecture](docs/ARCHITECTURE.md) · [API Documentation](docs/API.md) · [Runbook](docs/RUNBOOK.md)**
+
+</div>
 
 ---
 
-## ◈ 01 — THE VISION
+## 01 / THE CONCEPT
 
-**What if infrastructure could detect instability, isolate failures, and continuously work toward the desired state?**
+Infrastructure platforms are not simply collections of clusters. They are systems that must make placement decisions, maintain state, respond to failures, and expose operational information.
 
-CELLFORGE X is a Go-based platform-engineering prototype exploring the architecture of a cell-based, multi-cluster Kubernetes control plane.
+**CELLFORGE X** explores these challenges through a cell-based control-plane design.
 
-It focuses on the engineering principles behind infrastructure orchestration:
+Its central architectural idea is failure containment: organize infrastructure into logical cells, evaluate their capacity and health, and model recovery decisions without treating every infrastructure failure as a platform-wide event.
 
-- Capacity-aware workload placement.
-- Cell-based infrastructure organization.
-- Desired-state reconciliation.
-- Failure isolation and recovery simulation.
-- Operational visibility.
-- Automated build and deployment workflows.
+### Design philosophy
 
-The central design principle is simple:
-
-> A failure in one infrastructure cell should not automatically become a failure across the entire platform.
-
-CELLFORGE X explores how that principle can influence the design of modern cloud-native platforms.
-
-## ✦ 02 — PLATFORM AT A GLANCE
-
-| Dimension | Description |
+| Principle | Engineering intent |
 |---|---|
-| Project | CELLFORGE X |
-| Category | Platform Engineering |
-| Architecture | Cell-based control-plane prototype |
-| Primary language | Go |
-| Interface | HTTP API |
-| Scheduling | Capacity-aware placement |
-| Recovery | Reconciliation and failover simulation |
-| Deployment assets | Docker and Kubernetes manifests |
-| Automation | GitHub Actions |
-| Visualization | Infrastructure dashboard concept |
+| Cell isolation | Limit the modeled blast radius of failures |
+| Intelligent placement | Consider infrastructure capacity |
+| Reconciliation | Compare desired and observed state |
+| Recovery planning | Evaluate alternative placement decisions |
+| Observability | Expose useful operational information |
+| Modularity | Separate platform responsibilities |
 
-## ◈ 03 — SYSTEM ARCHITECTURE
+## 02 / ARCHITECTURE
 
-The architecture separates incoming workload requests, placement decisions, infrastructure state, and recovery planning.
-
-### High-level architecture
+### System topology
 
 ```mermaid
 flowchart TB
-    USER(["Platform Operator / Client"])
-    
-    subgraph CONTROL["01 · CONTROL PLANE"]
-        API["Go HTTP API"]
-        VALIDATE["Request Validation"]
-        SCHED["Capacity-Aware Scheduler"]
-        RECON["Reconciliation Engine"]
-        HEALTH["Health & State Evaluation"]
+    CLIENT(["PLATFORM CLIENT"])
+
+    subgraph CP["CELLFORGE X · CONTROL PLANE"]
+      API["HTTP API"]
+      VALIDATE["Request Validation"]
+      SCHED["Capacity-Aware Scheduler"]
+      RECON["Reconciliation Engine"]
+      HEALTH["Cell Health Evaluation"]
     end
 
-    subgraph STATE["02 · PLATFORM STATE"]
-        STORE[("Platform State Store")]
-        CELLS["Cell Registry"]
-        WORKLOADS["Workload Registry"]
+    subgraph DATA["PLATFORM STATE"]
+      REG[("Cell Registry")]
+      WORK[("Workload Registry")]
     end
 
-    subgraph INFRA["03 · INFRASTRUCTURE CELLS"]
-        direction LR
-        CELL_A["CELL A<br/>Healthy"]
-        CELL_B["CELL B<br/>Healthy"]
-        CELL_C["CELL C<br/>Unhealthy / Simulated"]
+    subgraph CELLS["CELL-BASED INFRASTRUCTURE MODEL"]
+      direction LR
+      A["CELL 01<br/>Healthy"]
+      B["CELL 02<br/>Healthy"]
+      C["CELL 03<br/>Unhealthy · Simulated"]
     end
 
-    subgraph OPERATIONS["04 · OPERATIONS & VISIBILITY"]
-        METRICS["Metrics / Operational Signals"]
-        DASH["Infrastructure Dashboard"]
-        RECOVERY["Recovery Plan / Failover Simulation"]
+    subgraph OBS["OPERATIONS"]
+      METRICS["Metrics"]
+      DASH["Dashboard"]
+      RECOVERY["Recovery Plan"]
     end
 
-    USER --> API
-    API --> VALIDATE
-    VALIDATE --> SCHED
-    SCHED <--> STORE
-    STORE <--> CELLS
-    STORE <--> WORKLOADS
-    SCHED --> RECON
-    RECON --> HEALTH
-    HEALTH --> CELL_A
-    HEALTH --> CELL_B
-    HEALTH --> CELL_C
+    CLIENT --> API --> VALIDATE --> SCHED
+    SCHED <--> REG
+    SCHED <--> WORK
+    SCHED --> RECON --> HEALTH
+    HEALTH --> A
+    HEALTH --> B
+    HEALTH --> C
     HEALTH --> RECOVERY
-    STORE --> METRICS
-    METRICS --> DASH
     RECOVERY --> DASH
+    REG --> METRICS
+    WORK --> METRICS
+    METRICS --> DASH
 
-    classDef client fill:#172554,stroke:#60A5FA,color:#DBEAFE,stroke-width:2px
-    classDef control fill:#312E81,stroke:#A78BFA,color:#F5F3FF,stroke-width:2px
-    classDef state fill:#164E63,stroke:#22D3EE,color:#ECFEFF,stroke-width:2px
-    classDef healthy fill:#064E3B,stroke:#34D399,color:#D1FAE5,stroke-width:2px
-    classDef warning fill:#78350F,stroke:#FBBF24,color:#FEF3C7,stroke-width:2px
-    classDef ops fill:#3B0764,stroke:#C084FC,color:#FAE8FF,stroke-width:2px
+    classDef api fill:#312E81,stroke:#A78BFA,color:#FFFFFF,stroke-width:2px
+    classDef data fill:#164E63,stroke:#22D3EE,color:#FFFFFF,stroke-width:2px
+    classDef healthy fill:#064E3B,stroke:#34D399,color:#FFFFFF,stroke-width:2px
+    classDef unhealthy fill:#78350F,stroke:#F59E0B,color:#FFFFFF,stroke-width:2px
+    classDef ops fill:#3B0764,stroke:#C084FC,color:#FFFFFF,stroke-width:2px
+    classDef client fill:#172554,stroke:#60A5FA,color:#FFFFFF,stroke-width:2px
 
-    class USER client
-    class API,VALIDATE,SCHED,RECON,HEALTH control
-    class STORE,CELLS,WORKLOADS state
-    class CELL_A,CELL_B healthy
-    class CELL_C warning
+    class API,VALIDATE,SCHED,RECON,HEALTH api
+    class REG,WORK data
+    class A,B healthy
+    class C unhealthy
     class METRICS,DASH,RECOVERY ops
+    class CLIENT client
 ```
 
-### Architectural layers
+### Architectural boundaries
 
-| Layer | Responsibility |
+| Component | Responsibility |
 |---|---|
-| API layer | Accepts and processes platform requests |
-| Scheduling layer | Evaluates capacity and workload placement |
-| State layer | Maintains platform and workload state |
-| Reconciliation layer | Evaluates desired and observed state |
-| Cell layer | Represents isolated infrastructure units |
-| Operations layer | Provides visibility and recovery information |
+| API | Receives platform requests |
+| Scheduler | Evaluates capacity and placement |
+| State store | Maintains modeled platform state |
+| Reconciliation | Generates corrective plans |
+| Cell model | Represents isolated infrastructure units |
+| Health evaluation | Evaluates cell health |
+| Operations | Exposes metrics and dashboard information |
 
-*Note: The infrastructure cells in this prototype represent the platform's modeled environment. They are not proof of live Kubernetes clusters being controlled.*
+> **Architecture note:** This repository currently models cell-based infrastructure and simulated recovery. It does not yet implement live multi-cluster Kubernetes orchestration.
 
-## ✦ 04 — CORE ENGINEERING CAPABILITIES
+## 03 / ENGINEERING CAPABILITIES
 
-### 01. Control-plane API
-
-A Go HTTP API that provides the entry point for interacting with platform functionality.
-
-**Engineering focus:**
-- Request handling.
-- Platform operations.
-- Workload and cell state.
-- API-level infrastructure management.
-
-### 02. Capacity-aware scheduling
-
-A scheduler that evaluates infrastructure capacity when selecting workload placement targets.
-
-**Engineering focus:**
-- Resource-aware placement.
-- Capacity constraints.
-- Cell selection.
-- Scheduling decisions.
-
-### 03. Reconciliation engine
-
-A control-plane pattern that compares desired and observed platform state to identify required corrective actions.
-
-**Engineering focus:**
-- State comparison.
-- Reconciliation planning.
-- Consistent platform behavior.
-- Recovery-oriented workflows.
-
-### 04. Failure isolation and failover simulation
-
-Explores how an unhealthy cell can affect workload availability and how recovery decisions can be represented.
-
-**Engineering focus:**
-- Cell health evaluation.
-- Failure scenarios.
-- Recovery planning.
-- Blast-radius awareness.
-
-### 05. Observability and dashboard
-
-A dashboard concept for presenting platform information in a modern infrastructure-oriented interface.
-
-**Engineering focus:**
-- Operational visibility.
-- Infrastructure status.
-- Workload overview.
-- Metrics presentation.
-
-### 06. Infrastructure automation
-
-The repository includes containerization, Kubernetes deployment assets, and a CI workflow.
-
-**Engineering focus:**
-- Docker packaging.
-- Kubernetes deployment configuration.
-- GitHub Actions automation.
-- Repeatable development workflows.
-
-## ◈ 05 — TECHNOLOGY STACK
-
-| Technology | Purpose |
+| Capability | Implementation |
 |---|---|
-| Go | Control-plane implementation |
-| HTTP / REST concepts | API communication |
-| Kubernetes | Infrastructure architecture and deployment concepts |
-| Docker | Container packaging |
-| YAML | Infrastructure configuration |
-| GitHub Actions | CI workflow |
-| HTML / CSS / JavaScript | Dashboard interface |
-| Prometheus-format metrics | Metrics-oriented observability, where implemented |
+| Go control-plane API | Implemented |
+| Capacity-aware scheduler | Implemented |
+| Platform state model | Implemented |
+| Reconciliation behavior | Prototype |
+| Failure and recovery behavior | Simulation |
+| Dashboard interface | Included |
+| Docker packaging | Included |
+| Kubernetes deployment assets | Included |
+| GitHub Actions workflow | Included |
+| Live multi-cluster connectivity | Planned |
 
-<p align="center">
-  <img src="https://skillicons.dev/icons?i=go,docker,kubernetes,linux,git,github,aws&theme=dark" alt="Technology icons">
-</p>
+### Scheduling lifecycle
 
-## ✦ 06 — REPOSITORY STRUCTURE
+```mermaid
+flowchart TD
+    R["Workload Request"]
+    V["Validate Request"]
+    C["Evaluate Cell Capacity"]
+    D{"Eligible Cell?"}
+    P["Select Placement"]
+    N["Reject / No Placement"]
+    S["Update Desired State"]
+    RC["Reconciliation"]
+    H{"Cell Healthy?"}
+    OK["Maintain Placement"]
+    F["Simulate Recovery Decision"]
+
+    R --> V --> C --> D
+    D -->|Yes| P --> S --> RC --> H
+    D -->|No| N
+    H -->|Yes| OK
+    H -->|No| F
+
+    classDef start fill:#172554,stroke:#60A5FA,color:#FFFFFF
+    classDef process fill:#312E81,stroke:#A78BFA,color:#FFFFFF
+    classDef success fill:#064E3B,stroke:#34D399,color:#FFFFFF
+    classDef warning fill:#78350F,stroke:#F59E0B,color:#FFFFFF
+
+    class R start
+    class V,C,P,S,RC process
+    class OK success
+    class N,F warning
+```
+
+## 04 / TECHNOLOGY SYSTEM
+
+| Layer | Technology |
+|---|---|
+| Core language | Go |
+| API | Go HTTP |
+| Infrastructure concepts | Kubernetes |
+| Packaging | Docker |
+| Configuration | YAML |
+| Automation | GitHub Actions |
+| Interface | HTML, CSS, JavaScript |
+| Observability concept | Prometheus-format metrics |
+
+## 05 / REPOSITORY MAP
 
 ```text
 cellforge-x-multi-cluster-platform/
@@ -234,6 +191,14 @@ cellforge-x-multi-cluster-platform/
 │   └── controlplane/
 │       └── main.go
 │
+├── internal/
+│   └── platform/
+│       ├── api.go
+│       ├── model.go
+│       ├── scheduler.go
+│       ├── store.go
+│       └── platform_test.go
+│
 ├── deploy/
 │   └── kubernetes/
 │       └── deployment.yaml
@@ -244,49 +209,28 @@ cellforge-x-multi-cluster-platform/
 │   ├── RUNBOOK.md
 │   └── architecture.svg
 │
-├── internal/
-│   └── platform/
-│       ├── api.go
-│       ├── model.go
-│       ├── scheduler.go
-│       ├── store.go
-│       └── platform_test.go
-│
 ├── scripts/
 │   └── demo.sh
 │
 ├── web/
 │   └── dashboard.html
 │
-├── .dockerignore
 ├── Dockerfile
-├── LICENSE
 ├── Makefile
-├── README.md
-└── go.mod
+├── go.mod
+├── LICENSE
+└── README.md
 ```
 
-### Code organization
+## 06 / QUICK START
 
-| Directory | Engineering responsibility |
-|---|---|
-| `cmd/controlplane` | Application entry point |
-| `internal/platform` | Core platform logic |
-| `deploy/kubernetes` | Kubernetes deployment assets |
-| `docs` | Architecture, API and operational documentation |
-| `scripts` | Demo and helper scripts |
-| `web` | Dashboard concept |
-| `.github/workflows` | CI automation |
+### Requirements
 
-## ◈ 07 — GETTING STARTED
+- Go toolchain
+- Git
+- VS Code or another Go editor
 
-### Prerequisites
-
-- Go installed.
-- Git installed.
-- Visual Studio Code or another Go-compatible editor.
-
-### Clone the repository
+### Clone
 
 ```bash
 git clone https://github.com/akankshad1712/cellforge-x-multi-cluster-platform.git
@@ -294,7 +238,7 @@ git clone https://github.com/akankshad1712/cellforge-x-multi-cluster-platform.gi
 cd cellforge-x-multi-cluster-platform
 ```
 
-### Download dependencies
+### Dependencies
 
 ```bash
 go mod download
@@ -312,134 +256,57 @@ go test ./... -race -cover
 go run ./cmd/controlplane
 ```
 
-### Explore the dashboard
+### Open the dashboard
 
-Open:
+Open `web/dashboard.html` in your browser.
 
-```text
-web/dashboard.html
-```
+Refer to [docs/API.md](docs/API.md) for API documentation and [docs/RUNBOOK.md](docs/RUNBOOK.md) for operational guidance.
 
-You can open this file directly in your browser.
+## 07 / PROJECT ROADMAP
 
-## ✦ 08 — ENGINEERING WORKFLOW
+These are potential future engineering extensions.
 
-```mermaid
-flowchart LR
-    A["Workload Request"] --> B["API Validation"]
-    B --> C["Capacity Evaluation"]
-    C --> D{"Suitable Cell?"}
-    D -->|Yes| E["Placement Decision"]
-    D -->|No| F["Scheduling Rejection"]
-    E --> G["Desired State"]
-    G --> H["Reconciliation"]
-    H --> I{"Cell Healthy?"}
-    I -->|Yes| J["Maintain Placement"]
-    I -->|No| K["Recovery / Failover Simulation"]
-    K --> L["Updated Placement Plan"]
+- [ ] Live Kubernetes integration using client-go or controller-runtime
+- [ ] Persistent state using PostgreSQL
+- [ ] Distributed coordination and leader election
+- [ ] Topology-aware scheduling
+- [ ] AWS and GCP provider adapters
+- [ ] OpenTelemetry tracing
+- [ ] Expanded Prometheus and Grafana observability
+- [ ] Chaos engineering and fault injection
+- [ ] Production authentication and authorization
+- [ ] Integration and load testing
 
-    classDef input fill:#172554,stroke:#60A5FA,color:#DBEAFE
-    classDef process fill:#312E81,stroke:#A78BFA,color:#F5F3FF
-    classDef success fill:#064E3B,stroke:#34D399,color:#D1FAE5
-    classDef warning fill:#78350F,stroke:#FBBF24,color:#FEF3C7
+## 08 / ENGINEERING SCOPE
 
-    class A input
-    class B,C,E,G,H process
-    class J,L success
-    class F,K warning
-```
+CELLFORGE X is an advanced engineering prototype intended to explore control-plane architecture.
 
-This workflow illustrates the platform's intended control-plane behavior; it does not imply that every step performs a live Kubernetes operation.
+The current implementation should not be confused with a production Kubernetes platform. Real cluster mutation, distributed coordination, persistent infrastructure state, cloud provisioning, and production security are not yet represented as completed capabilities.
 
-## ◈ 09 — RELIABILITY & DESIGN PRINCIPLES
+This distinction is intentional: architecture, simulation, and implemented behavior should remain independently verifiable.
 
-| Principle | Design objective |
-|---|---|
-| Failure isolation | Limit the impact of unhealthy infrastructure |
-| Capacity awareness | Avoid unsuitable workload placement |
-| Reconciliation | Continuously reason about platform state |
-| Modularity | Separate API, scheduling, and state responsibilities |
-| Observability | Make infrastructure behavior easier to understand |
-| Automation | Reduce repetitive build and deployment work |
+## 09 / AUTHOR
 
-## ✦ 10 — PROJECT MATURITY
+<div align="center">
 
-CELLFORGE X is an engineering prototype, not a production-ready multi-cluster Kubernetes platform.
+### AKANKSHA DESHMUKH
 
-| Capability | Current scope |
-|---|---|
-| Go control-plane API | Implemented |
-| Capacity-aware scheduler | Implemented |
-| Platform state model | Implemented |
-| Reconciliation / recovery behavior | Prototype and simulation |
-| Cell-based infrastructure model | Modeled |
-| Dashboard concept | Included |
-| Dockerfile | Included |
-| Kubernetes deployment manifest | Included |
-| GitHub Actions workflow | Included |
-| Live multi-cluster Kubernetes integration | Future work |
-| Persistent distributed state | Future work |
-| Distributed leader election | Future work |
-| Production AWS / GCP adapters | Future work |
-| Production authentication and authorization | Future work |
+**Software Engineering · Platform Engineering · Cloud-Native Infrastructure**
 
-## ◈ 11 — ROADMAP
+[![GitHub](https://img.shields.io/badge/GitHub-akankshad1712-181717?style=flat-square&logo=github)](https://github.com/akankshad1712)
 
-The following are potential engineering extensions, not claims of completed functionality.
+[![LinkedIn](https://img.shields.io/badge/LinkedIn-Akanksha_Deshmukh-0A66C2?style=flat-square&logo=linkedin)](https://www.linkedin.com/in/akanksha-deshmukh-26210b244/)
 
-- [ ] Integrate real Kubernetes clusters using `client-go` or `controller-runtime`.
-- [ ] Introduce PostgreSQL-backed persistent state.
-- [ ] Implement Kubernetes Lease-based leader election.
-- [ ] Add topology-aware scheduling and affinity policies.
-- [ ] Build AWS and GCP infrastructure adapters.
-- [ ] Add OpenTelemetry distributed tracing.
-- [ ] Expand Prometheus metrics and Grafana dashboards.
-- [ ] Introduce chaos testing and fault injection.
-- [ ] Add authentication, authorization, and audit logging.
-- [ ] Validate recovery behavior through integration and load tests.
-
-## ✦ 12 — CONTRIBUTING
-
-Contributions, suggestions, and engineering discussions are welcome.
-
-1. Fork the repository.
-2. Create a feature branch.
-3. Make your changes.
-4. Run the Go test suite.
-5. Submit a pull request with a clear explanation.
-
-```bash
-git checkout -b feature/your-feature
-git add .
-git commit -m "feat: describe your improvement"
-git push origin feature/your-feature
-```
-
-## ◈ 13 — PROJECT AUTHOR
-
-<p align="center">
-  <strong>AKANKSHA DESHMUKH</strong>
-  <br>
-  Platform Engineering • Cloud-Native Systems • Software Engineering
-</p>
-
-<p align="center">
-  <a href="https://github.com/akankshad1712">
-    <img src="https://img.shields.io/badge/GitHub-akankshad1712-181717?style=for-the-badge&logo=github" alt="GitHub">
-  </a>
-  <a href="https://www.linkedin.com/in/akanksha-deshmukh-26210b244/">
-    <img src="https://img.shields.io/badge/LinkedIn-Akanksha%20Deshmukh-0A66C2?style=for-the-badge&logo=linkedin" alt="LinkedIn">
-  </a>
-</p>
-
-**Interested in:** Platform Engineering · Kubernetes · Go · Distributed Systems · Cloud Infrastructure · Reliability Engineering
+</div>
 
 ---
 
-<p align="center">
-  <strong>CELLFORGE X</strong>
-  <br>
-  <em>Beyond cluster management. Toward intelligent infrastructure orchestration.</em>
-  <br><br>
-  <sub>Built to explore the engineering principles behind resilient cloud-native platforms.</sub>
-</p>
+<div align="center">
+
+**CELLFORGE X**
+
+*Beyond cluster management. Toward intelligent infrastructure orchestration.*
+
+<sub>Designed and developed by Akanksha Deshmukh.</sub>
+
+</div>
